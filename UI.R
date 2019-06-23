@@ -14,6 +14,7 @@ fluidPage(
   
   conditionalPanel(condition = "input.show_options == true",
                    fluidRow(
+                     column(12, align = "center",
                      pickerInput(
                        inputId = "category_select",
                        choices = categories,
@@ -31,6 +32,7 @@ fluidPage(
                        max = "2019-08-26"
                      )
                    )
+                   )
     
   ),
   
@@ -41,6 +43,14 @@ fluidPage(
                     style = "jelly", 
                     color = "danger"
                   )
+  )
+  ), 
+  br(),
+  br(),
+  
+  fluidRow(
+    column(12, align = "center",
+    htmlOutput("roulette_result")
   )
   )
   
