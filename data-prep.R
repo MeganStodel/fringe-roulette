@@ -1,4 +1,5 @@
 library(data.table)
+library(feather)
 
 all_files <- list.files(path = "./csvs", pattern = ".csv")
 
@@ -28,4 +29,10 @@ fringe_shows[, names(fringe_shows) := lapply(.SD, function(x) gsub("â„¢", "�
 fringe_shows[, names(fringe_shows) := lapply(.SD, function(x) gsub("â€¦", "...", x))]
 
 fringe_shows[, names(fringe_shows) := lapply(.SD, function(x) gsub("Ã©", "é", x))]
+
+## Make into a feather file
+
+write_feather(fringe_shows, "fringe_shows.feather")
+
+
 
