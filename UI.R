@@ -26,9 +26,9 @@ fluidPage(
                      dateRangeInput(
                        inputId = "date_select", 
                        label = "Date range", 
-                       start = "2019-08-02", 
+                       start = "2019-07-31", 
                        end = "2019-08-26", 
-                       min = "2019-08-02", 
+                       min = "2019-07-31", 
                        max = "2019-08-26"
                      )
                    )
