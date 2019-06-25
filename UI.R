@@ -15,9 +15,11 @@ fluidPage(
   headerPanel(h1("Fringe Roulette", align = "center")),
   br(),
   
-  fluidRow(column(12, align = "center",
-                  materialSwitch(
-                    inputId = "show_options"
+  fluidRow(column(12, align = "center", 
+                  prettySwitch(
+                    inputId = "show_options",
+                    label = "", 
+                    width = "80%"
                   )
   )
   ),
@@ -43,9 +45,10 @@ fluidPage(
                      )
                    )
                    )
+                   
     
   ),
-  
+
   fluidRow(column(12, align = "center",
                   actionBttn(
                     inputId = "random_show",
