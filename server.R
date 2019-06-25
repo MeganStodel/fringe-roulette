@@ -10,7 +10,7 @@ function(input, output, session) {
   })
   
   show_result <- eventReactive(input$random_show, {
-    Sys.sleep(2)
+    Sys.sleep(1)
     shows <- copy(fringe_shows)
     if (input$show_options == TRUE) {
       shows <- shows[Category %in% input$category_select &
