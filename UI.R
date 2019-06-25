@@ -1,4 +1,14 @@
 fluidPage(
+  theme = "fringe_style.css", 
+  
+  tags$head(
+    tags$style(HTML("
+                    @import url('//fonts.googleapis.com/css?family=Alegreya');
+                    @import url('//fonts.googleapis.com/css?family=Montserrat');
+                    @import url('//fonts.googleapis.com/css?family=Righteous');
+                    
+                    "))
+    ),
 
   title = "Fringe Roulette",
   
@@ -49,9 +59,12 @@ fluidPage(
   br(),
   
   fluidRow(
-    column(12, align = "center",
-    htmlOutput("roulette_result")
-  )
+    column(1), 
+    column(10, align = "center",
+    withSpinner(htmlOutput("roulette_result"), type = 5, 
+                proxy.height = "200px")
+  ), 
+  column(1)
   )
   
 )

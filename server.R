@@ -10,6 +10,7 @@ function(input, output, session) {
   })
   
   show_result <- eventReactive(input$random_show, {
+    Sys.sleep(2)
     shows <- copy(fringe_shows)
     if (input$show_options == TRUE) {
       shows <- shows[Category %in% input$category_select &
@@ -21,9 +22,8 @@ function(input, output, session) {
   
   output$roulette_result <- renderUI({
     outcome_text <- HTML(paste0(
-      show_result()[, Title], 
-      "<br />",
-      "This is in the ", show_result()[, Category], 
+      "<div id='mydiv'><f><b>", show_result()[, Title], 
+      "</f></b><br /><br /><br />This is in the ", show_result()[, Category], 
       " category and is showing at ", show_result()[, Venue], ". ", 
       "<br />",
       "Find out more about this event on its ", 

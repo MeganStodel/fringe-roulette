@@ -2,6 +2,7 @@ library(data.table)
 library(feather)
 library(shiny)
 library(shinyWidgets)
+library(shinycssloaders)
 
 ## Read in data
 
