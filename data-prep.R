@@ -38,6 +38,8 @@ fringe_shows[, names(fringe_shows) := lapply(.SD, function(x) gsub("Ã’", "Ò"
 
 fringe_shows[, names(fringe_shows) := lapply(.SD, function(x) gsub("Ã", "à", x))]
 
+fringe_shows[, names(fringe_shows) := lapply(.SD, function(x) gsub("à¼", "ü", x))]
+
 
 ## Make into a feather file
 
