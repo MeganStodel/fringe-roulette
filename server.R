@@ -40,7 +40,37 @@ function(input, output, session) {
     ))
     return(outcome_text)
   })
-  
+
+
+## Rules
+
+  observeEvent(input$rules, {
+    sendSweetAlert(
+      session = session,
+      title = "How to play Fringe Roulette",
+      text = tags$span("1) Choose the category of show you want, and the dates and times that work for you.",
+                       tags$br(),
+                       "2) Press \"Show me\" and wait for your result...",
+                       tags$br(),
+                       "3) Challenge yourself to see one of the first three shows that comes up!",
+                       tags$br(),
+                       tags$br(),
+                       
+                       "If you're ready for the advanced version - don't use any filters, and you MUST see the first show that you get (assuming you can).", 
+                       tags$br(),
+                       tags$br(),
+                       "And be sure to use #fringeroulette if you mention the show on social media!",
+                       tags$br(),
+                       tags$br(),
+                       
+                       "Fringe Roulette was created by", 
+                       tags$a(href="http://www.meganstodel.com", "Megan Stodel", target="_blank"), ". "),
+      type = "info", 
+      html = TRUE
+    )
+  }
+  )
+
 }
 
 

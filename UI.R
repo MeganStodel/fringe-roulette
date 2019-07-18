@@ -1,4 +1,5 @@
 fluidPage(
+  useSweetAlert(),
   theme = "fringe_style.css", 
   
   tags$head(
@@ -11,8 +12,17 @@ fluidPage(
     ),
 
   title = "Fringe Roulette",
-  
+  br(),
   headerPanel(h1("Fringe Roulette", align = "center")),
+  div(style = "position:absolute;right:1em;top:1em",
+      actionBttn(
+        inputId = "rules",
+        label = "Read the rules",
+        style = "jelly",
+        color = "danger",
+        size = "xs"
+      )
+      ),
   br(),
   
   fluidRow(column(12, align = "center", 
@@ -26,7 +36,8 @@ fluidPage(
   
   conditionalPanel(condition = "input.show_options == true",
                    fluidRow(
-                     column(6, align = "right",
+                     column(3),
+                     column(3, align = "center",
                      pickerInput(
                        inputId = "category_select",
                        label = "Category",
@@ -36,18 +47,20 @@ fluidPage(
                        multiple = TRUE, 
                        selected = categories
                      )),
-                     column(6, align = "left", 
+                     column(3, align = "center", 
                             dateRangeInput(
                        inputId = "date_select", 
                        label = "Date range", 
-                       start = "2019-07-31", 
+                       start = "2019-07-29", 
                        end = "2019-08-26", 
-                       min = "2019-07-31", 
+                       min = "2019-07-29", 
                        max = "2019-08-26"
-                     ))
+                     )),
+                     column(3)
                      ),
                    fluidRow(
-                     column(6, align = "right",
+                     column(3),
+                     column(2, align = "center",
                      pickerInput(
                        inputId = "start_hour",
                        label = "Start of time range", 
@@ -57,7 +70,8 @@ fluidPage(
                      inputId = "start_min",
                      choices = min_seq
                    )),
-                   column(6, align = "left",
+                   column(2),
+                   column(2, align = "center",
                    pickerInput(
                      inputId = "end_hour",
                      label = "End of time range", 
@@ -69,7 +83,8 @@ fluidPage(
                      choices = min_seq, 
                      selected = "55"
                    )
-                   )
+                   ), 
+                   column(3)
                    )
                    
   ),
@@ -93,6 +108,8 @@ fluidPage(
                 proxy.height = "200px")
   ), 
   column(1)
-  )
+  ),
+  br(),
+  br()
   
 )
