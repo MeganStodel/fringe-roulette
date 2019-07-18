@@ -9,12 +9,20 @@ function(input, output, session) {
     return(date_range)
   })
   
+  time_range_seq <- reactive({
+    start <- strptime(paste0(input$start_hour, ":", input$start_min), "%H:%M")
+    end <- strptime(paste0(input$end_hour, ":", input$end_min), "%H:%M")
+    time_seq <- strftime(seq(start, end, by = 300), format = "%H:%M")
+    return(time_seq <- paste0(time_seq, collapse = "|"))
+  })
+  
   show_result <- eventReactive(input$random_show, {
     Sys.sleep(1)
     shows <- copy(fringe_shows)
     if (input$show_options == TRUE) {
       shows <- shows[Category %in% input$category_select &
-                       Dates %like% date_range()]
+                       Dates %like% date_range() &
+                       Times %like% time_range_seq()]
     }
     show_result <- shows[sample(nrow(shows), 1)]
     return(show_result)
