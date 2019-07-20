@@ -104,11 +104,27 @@ fluidPage(
   fluidRow(
     column(1), 
     column(10, align = "center",
+           textOutput("no_shows")
+    ), 
+    column(1)
+  ),
+  
+  fluidRow(
+    column(1), 
+    column(10, align = "center",
     withSpinner(htmlOutput("roulette_result"), type = 5, 
                 proxy.height = "200px")
   ), 
   column(1)
   ),
+  fluidRow(
+    column(1), 
+    column(10, align = "center",
+           htmlOutput("multiple_times")
+    ), 
+    column(1)
+  ),
+
   br(),
   br()
   

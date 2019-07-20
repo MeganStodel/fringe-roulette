@@ -1,6 +1,9 @@
 function(input, output, session) {
   
   date_range <- reactive({
+    if (input$show_options == TRUE) {
+      req(input$date_select[2] >= input$date_select[1])
+    }
     date_range <- seq(as.Date(input$date_select[1]), as.Date(input$date_select[2]), by="days")
     date_range <- format(date_range, "%d %b")
     date_range <- gsub("^0", "", date_range)
@@ -10,6 +13,9 @@ function(input, output, session) {
   })
   
   time_range_seq <- reactive({
+    if (input$show_options == TRUE) {
+      req(paste0(input$end_hour, input$end_min) >= paste0(input$start_hour, input$start_min))
+    }
     start <- strptime(paste0(input$start_hour, ":", input$start_min), "%H:%M")
     end <- strptime(paste0(input$end_hour, ":", input$end_min), "%H:%M")
     time_seq <- strftime(seq(start, end, by = 300), format = "%H:%M")
@@ -29,6 +35,20 @@ function(input, output, session) {
   })
   
   output$roulette_result <- renderUI({
+    if (input$show_options == TRUE) {
+    validate(
+      need(input$category_select != "", 
+           "You have no categories selected.")
+    )
+      validate(
+      need(input$date_select[2] >= input$date_select[1], 
+           "End date is earlier than start date")
+      )
+      validate(
+        need(paste0(input$end_hour, input$end_min) >= paste0(input$start_hour, input$start_min), 
+             "End time is earlier than start time")
+      )
+    }
     outcome_text <- HTML(paste0(
       "<div id='mydiv'><f><b>", show_result()[, Title], 
       "</f></b><br /><br /><br />This is in the ", show_result()[, Category], 
@@ -40,7 +60,22 @@ function(input, output, session) {
     ))
     return(outcome_text)
   })
-
+  
+  output$no_shows <- renderText({
+  validate(
+    need(show_result()[, .N] != 0, 
+         "There are no events matching your requirements. Try again with different filters. ")
+  )
+  }
+  )
+  
+  output$multiple_times <- renderUI({
+    validate(
+      need(show_result()[, Times %like% ","], "")
+    )
+    "This event has multiple showing times; please check the official page for details."
+  })
+  
 
 ## Rules
 
@@ -64,7 +99,7 @@ function(input, output, session) {
                        tags$br(),
                        
                        "Fringe Roulette was created by", 
-                       tags$a(href="http://www.meganstodel.com", "Megan Stodel", target="_blank"), ". "),
+                       tags$a(href="https://www.meganstodel.com/posts/fringe-roulette/", "Megan Stodel", target="_blank"), ". "),
       type = "info", 
       html = TRUE
     )
