@@ -25,6 +25,9 @@ function(input, output, session) {
   show_result <- eventReactive(input$random_show, {
     Sys.sleep(1)
     shows <- copy(fringe_shows)
+    if (today <= "2019-09-01" & input$show_options == FALSE) {
+      shows <-shows[Dates %like% today_formatted]
+    }
     if (input$show_options == TRUE) {
       shows <- shows[Category %in% input$category_select &
                        Dates %like% date_range() &
