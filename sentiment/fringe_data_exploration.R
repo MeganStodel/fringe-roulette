@@ -2,6 +2,7 @@ library(rvest)
 library(data.table)
 library(feather)
 library(stringr)
+library(ggplot2)
 
 ## Read in data
 
@@ -22,7 +23,7 @@ tweeted_shows <- c("Devil of Choice",
                    "Des Kapital: I'm Loving Engels Instead", 
                    "Laugh Till It Hurts: A BDSM Comedy Show", 
                    "Good Scout", 
-                   "MARVELus: Awww Snap!", 
+                  # "MARVELus: Awww Snap!", (not on site)
                    "Black Dog", 
                    "Tumours", 
                    "Viva Music!", 
@@ -31,11 +32,11 @@ tweeted_shows <- c("Devil of Choice",
                    "Inflatable Space", 
                    "Carol Cates: Tell Tale", 
                    "HoneyBee", 
-                   "Daniel Audritt: Better Man ", 
-                   "Cathy: a Retelling of Wuthering Heights", 
+                   "Daniel Audritt: Better Man", 
+                   "Cathy: A Retelling of Wuthering Heights", 
                    "Tarot", 
                    "Niteskreen", 
-                   "Lock-in Cabaret", 
+                   "Lock-In Cabaret", 
                    "Courtney Pauroso: Gutterplum", 
                    "Tokyo Rose", 
                    "Alice Snedden: Absolute Monster", 
@@ -80,26 +81,55 @@ tweeted_shows <- c("Devil of Choice",
                    "Dangerous Adventures", 
                    "Rob Auton: The Time Show", 
                    "Die! Die! Die! Old People Die!", 
-                   "Back of the Head with a Brick")
+                   "Back of the Head with a Brick", 
+                   "Sinatra: Raw", 
+                   "JazzMain Presents Diggin Dexter!", 
+                   "Spray")
 
 fringe_roulette_shows <- fringe_shows[Title %in% tweeted_shows]
 fringe_roulette_shows <- fringe_roulette_shows[!(Title == "Tarot" & Category == "Comedy") &
-                                                 !(Title == "Chain of Trivia" & `Book Tickets` %like% "1")]
-
+                                                 !(Title == "Chain of Trivia" & `Book Tickets` %like% "1") &
+                                                 !(Title %like% "Cathy" & !`Book Tickets` %like% "1")]
 
 all_reviews <- data.table(show = character(), 
                           review = character())
 
+no_reviews <- character()
 
-next_show <- xml2::read_html("https://tickets.edfringe.com/whats-on/rust")
+for (i in 1:fringe_roulette_shows[, .N]) {
+  next_show <- xml2::read_html(paste0("https://tickets.edfringe.com", fringe_roulette_shows[, `Book Tickets`[i]]))
+  
+  review_text <- next_show %>%
+    html_nodes(".review-inner p") %>%
+    html_text()
+  
+  if (length(review_text) == 0) {
+    no_reviews <- c(no_reviews, fringe_roulette_shows[, Title[i]])
+  } else {
+  new_data <- data.table(show = fringe_roulette_shows[, Title[i]], review = review_text)
+  all_reviews <- rbind(all_reviews, new_data)
+  }
+}
 
-review_text <- next_show %>%
-  html_nodes(".review-inner p") %>%
-  html_text()
+all_reviews_clean <- all_reviews[!review %like% "Read the full review|Please login to add a review|Participants - for further details on our audience and|This review was reported and removed after review"]
 
-review_text <- head(review_text, -5)
+all_review_shows <- all_reviews[, unique(show)]
+all_review_clean_shows <- all_reviews_clean[, unique(show)]
 
-new_data <- data.table(show = "Rust", review = review_text)
+## Number of reviews per show
 
-all_reviews <- rbind(all_reviews, new_data)
+reviews_per_show <- all_reviews_clean[, .(number_of_reviews = .N), by = show]
+
+no_review_shows <- data.table(show = setdiff(all_review_shows, all_review_clean_shows), 
+                              number_of_reviews = 0)
+
+reviews_per_show <- rbind(reviews_per_show, no_review_shows)
+
+ggplot(reviews_per_show, aes(number_of_reviews)) +
+  geom_histogram()
+
+## Write out review data
+
+write_feather(all_reviews_clean, "./sentiment/all_reviews")
+
 
