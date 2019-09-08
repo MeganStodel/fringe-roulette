@@ -6,6 +6,10 @@ library(ggplot2)
 ## Read in data
 
 fringe_shows <- as.data.table(read_feather("fringe_shows.feather"))
+names(fringe_shows) <- tolower(names(fringe_shows))
+names(fringe_shows) <- gsub(" ", "_", names(fringe_shows))
+setnames(fringe_shows, "title", "show")
+
 reviews <- as.data.table(read_feather("./sentiment/all_reviews.feather"))
 
 ##### Remove shows with broken links ----
@@ -149,16 +153,94 @@ fringe_shows[, run_length := str_count(Dates, ',') + 1]
 
 reviews_per_show <- reviews[, .(number_of_reviews = .N), by = show]
 
-no_review_shows <- data.table(show = setdiff(fringe_shows[, Title], reviews[, show]), 
+no_review_shows <- data.table(show = setdiff(fringe_shows[, show], reviews[, show]), 
                               number_of_reviews = 0)
 
 
 reviews_per_show <- rbind(reviews_per_show, no_review_shows)
 
+reviews_per_show[, got_reviewed := ifelse(number_of_reviews != 0, TRUE, FALSE)]
+
+reviews_data <- merge(reviews_per_show, 
+                          fringe_shows[, .(show, category, venue, times, dates, run_length)], 
+                          all.x = TRUE)
+
+# Remove multiple shows
+
+multiple_shows <- reviews_data[, .N, by = show][N != 1]
+multiple_shows <- multiple_shows[, show]
+
+reviews_data <- reviews_data[!show %in% multiple_shows]
+
+
 ## Plot: number of reviews per show
 
-ggplot(reviews_per_show, aes(number_of_reviews)) +
+ggplot(reviews_data, aes(number_of_reviews)) +
   geom_histogram()
 
+## Plot: number of reviews by number of times performed
 
+ggplot(reviews_data[run_length < 28], aes(x = run_length, y = number_of_reviews)) + 
+  geom_jitter()
+
+# Only looking at shows with runs of at least 18 performances
+
+full_run_reviews_data <- reviews_data[run_length >= 18]
+
+ggplot(full_run_reviews_data, aes(number_of_reviews)) +
+  geom_histogram()
+
+## Plot: number of reviews by category
+
+reviews_per_category <- full_run_reviews_data[, .(average_reviews = median(number_of_reviews)), by = category][order(-average_reviews)]
+factor_order <- reviews_per_category[, category]
+reviews_per_category[, category := factor(category, levels = factor_order)]
+
+
+ggplot(reviews_per_category, aes(x = category, y = average_reviews)) +
+  geom_bar(stat = "identity")
+
+## Focus on venues with at least 10 shows
+
+venue_name <- c("Pleasance", 
+                "Gilded Balloon", 
+                "Underbelly", 
+                "Just the Tonic", 
+                "Summerhall", 
+                "Assembly", 
+                "Laughing Horse", 
+                "theSpace", 
+                "Scottish Comedy Festival", 
+                "PBH's Free Fringe", 
+                "ZOO", 
+                "Sweet", 
+                "Greenside", 
+                "The Stand", 
+                "Heroes", 
+                "C venues", 
+                "Paradise")
+
+for (i in 1:length(venue_name)) {
+  full_run_reviews_data[venue %like% venue_name[i], venue_for_analysis := venue_name[i]]
+}
+
+full_run_reviews_data[is.na(venue_for_analysis), venue_for_analysis := venue]
+
+
+shows_per_venue <- full_run_reviews_data[, .N, by = venue_for_analysis][order(-N)]
+twenty_plus_shows <- shows_per_venue[N >= 20, venue_for_analysis]
+
+high_show_venue_reviews <- full_run_reviews_data[venue_for_analysis %in% ten_plus_shows]
+
+
+reviews_per_venue <- high_show_venue_reviews[, .(average_reviews = median(number_of_reviews)), 
+                                             by = venue_for_analysis][order(-average_reviews)]
+factor_order <- reviews_per_venue[, venue_for_analysis]
+reviews_per_venue[, venue_for_analysis := factor(venue_for_analysis, levels = factor_order)]
+
+high_show_venue_reviews[, venue_for_analysis := factor(venue_for_analysis, levels = factor_order)]
+
+
+ggplot(high_show_venue_reviews, aes(x = venue_for_analysis, y = number_of_reviews)) +
+  geom_boxplot()
 
