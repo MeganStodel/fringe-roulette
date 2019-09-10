@@ -1,6 +1,7 @@
 library(data.table)
 library(feather)
 library(stringr)
+extrafont::loadfonts(device="win")
 library(ggplot2)
 
 ## Read in data
@@ -220,8 +221,25 @@ reviews_data <- merge(reviews_per_show,
 
 full_run_reviews_data <- reviews_data[run_length >= 19]
 
+fringe_theme <- theme_classic() + 
+  theme(panel.background = element_rect(fill = "#E7DECD", colour = "#E7DECD"), 
+        plot.background = element_rect(fill = "#E7DECD"), 
+        text = element_text(colour = "#2C2C54"), 
+        plot.title = element_text(family = "Agency FB", 
+                                  size = 28, 
+                                  hjust = 0.5), 
+        axis.text = element_text(size = 14), 
+        axis.title = element_text(size = 18, 
+                                  family = "Bahnschrift"), 
+        axis.line = element_line(colour = "#2C2C54")
+  )
+
 ggplot(full_run_reviews_data, aes(number_of_reviews)) +
-  geom_histogram()
+  geom_histogram(fill = "#A13D63") + 
+  labs(title = "Distribution of the number of reviews for each show", 
+       x = "Number of reviews", 
+       y = NULL) +
+  fringe_theme
 
 ## Plot: number of reviews by category
 
@@ -229,8 +247,20 @@ reviews_per_category <- full_run_reviews_data[, .(average_reviews = median(numbe
 factor_order <- reviews_per_category[, category]
 reviews_per_category[, category := factor(category, levels = factor_order)]
 
+addline_format <- function(x,...){
+  gsub('\\s','\n',x)
+}
+
+category_labels <- addline_format(factor_order)
+
+
 ggplot(reviews_per_category, aes(x = category, y = average_reviews)) +
-  geom_bar(stat = "identity")
+  geom_bar(stat = "identity", fill = "#A13D63") +
+  labs(title = "Average (median) number of reviews by category", 
+       x = "Category", 
+       y = NULL) +
+  scale_x_discrete(labels = category_labels) +
+  fringe_theme
 
 ## Focus on venues with at least 10 shows
 
