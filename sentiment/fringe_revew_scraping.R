@@ -8,7 +8,7 @@ library(ggplot2)
 
 fringe_shows <- as.data.table(read_feather("fringe_shows.feather"))
 
-all_reviews <- data.table(show = character(), 
+all_reviews <- data.table(show_and_group = character(), 
                           review = character())
 
 no_reviews <- character()
@@ -147,9 +147,14 @@ fringe_shows <- fringe_shows[!(`Book Tickets` %in% c("/whats-on/midsummer-night-
                                                      "/whats-on/jack-tucker-comedy-stand-up-hour"))]
 
 
+
+#### Make show names distinct -----
+
+fringe_shows[, show_and_group := paste0(Title, " (", `Group Name`, ")")]
+
 #### Run loop to get data ----
 
-for (i in 3360:fringe_shows[, .N]) {
+for (i in 1:fringe_shows[, .N]) {
   next_show <- xml2::read_html(paste0("https://tickets.edfringe.com", fringe_shows[, `Book Tickets`[i]]))
   
   review_text <- next_show %>%
@@ -157,9 +162,9 @@ for (i in 3360:fringe_shows[, .N]) {
     html_text()
   
   if (length(review_text) == 0) {
-    no_reviews <- c(no_reviews, fringe_shows[, Title[i]])
+    no_reviews <- c(no_reviews, fringe_shows[, show_and_group[i]])
   } else {
-    new_data <- data.table(show = fringe_shows[, Title[i]], review = review_text)
+    new_data <- data.table(show_and_group = fringe_shows[, show_and_group[i]], review = review_text)
     all_reviews <- rbind(all_reviews, new_data)
   }
 }
@@ -173,5 +178,5 @@ all_reviews_clean <- all_reviews[!review %like% "Read the full review|Please log
 
 ## Write out review data
 
-write_feather(all_reviews_clean, "./sentiment/all_reviews.feather")
+write_feather(all_reviews_clean, "./sentiment/all_reviews_differentiated.feather")
 
