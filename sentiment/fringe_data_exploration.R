@@ -4,7 +4,7 @@ library(stringr)
 extrafont::loadfonts(device="win")
 library(ggplot2)
 
-## Read in data
+## Read in data ----------------
 
 fringe_shows <- as.data.table(read_feather("fringe_shows.feather"))
 names(fringe_shows) <- tolower(names(fringe_shows))
@@ -202,6 +202,8 @@ fringe_shows <- fringe_shows[!(show_and_group %in% multiple_shows),
 
 fringe_shows <- rbind(fringe_shows, multiple_shows_data)
 
+write_feather(fringe_shows, "sentiment/cleaned_fringe_shows.feather")
+
 ## Number of reviews per show
 
 reviews_per_show <- reviews[, .(number_of_reviews = .N), by = show_and_group]
@@ -216,6 +218,13 @@ reviews_per_show[, got_reviewed := ifelse(number_of_reviews != 0, TRUE, FALSE)]
 reviews_data <- merge(reviews_per_show, 
                           fringe_shows, 
                           all.x = TRUE)
+
+write_feather(reviews_data, "sentiment/cleaned_review_data.feather")
+
+
+#### Load prepared data ---------------
+
+reviews_data <- read_feather("sentiment/cleaned_review_data.feather")
 
 # Only looking at shows with runs of at least 18 performances
 
@@ -262,20 +271,27 @@ ggplot(reviews_per_category, aes(x = category, y = average_reviews)) +
   scale_x_discrete(labels = category_labels) +
   fringe_theme
 
-## Focus on venues with at least 10 shows
+## Focus on venues with at least 25 shows
 
 shows_per_venue <- full_run_reviews_data[, .N, by = venue_for_analysis][order(-N)]
-twenty_plus_shows <- shows_per_venue[N >= 20, venue_for_analysis]
+enough_shows <- shows_per_venue[N >= 30, venue_for_analysis]
 
-high_show_venue_reviews <- full_run_reviews_data[venue_for_analysis %in% twenty_plus_shows]
+high_show_venue_reviews <- full_run_reviews_data[venue_for_analysis %in% enough_shows]
 
 reviews_per_venue <- high_show_venue_reviews[, .(average_reviews = median(number_of_reviews)), 
                                              by = venue_for_analysis][order(-average_reviews)]
-factor_order <- reviews_per_venue[, venue_for_analysis]
+venue_factor_order <- reviews_per_venue[, venue_for_analysis]
 reviews_per_venue[, venue_for_analysis := factor(venue_for_analysis, levels = factor_order)]
 
 high_show_venue_reviews[, venue_for_analysis := factor(venue_for_analysis, levels = factor_order)]
 
-ggplot(high_show_venue_reviews, aes(x = venue_for_analysis, y = number_of_reviews)) +
-  geom_boxplot()
+venue_labels <- addline_format(venue_factor_order)
 
+ggplot(high_show_venue_reviews, aes(x = venue_for_analysis, y = number_of_reviews)) +
+  geom_boxplot(fill = "#5EC29C") + 
+  labs(title = "Boxplots of reviews by venue", 
+       x = "Venue group", 
+       y = NULL) +
+  scale_x_discrete(labels = venue_labels) +
+  fringe_theme + 
+  theme(axis.text = element_text(size = 10))
