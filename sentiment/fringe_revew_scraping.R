@@ -174,7 +174,7 @@ for (i in 1:fringe_shows[, .N]) {
 shows_so_far <- unique(all_reviews[, show])
 tail(shows_so_far)
 
-all_reviews_clean <- all_reviews[!review %like% "Read the full review|Please login to add a review|Participants - for further details on our audience and|This review was reported and removed after review"]
+all_reviews_clean <- all_reviews[!review %like% "Read the full review|Please login to add a review|Participants - for further details on our audience and|This review was reported and removed after review|This review has been removed by the original author"]
 
 ## Write out review data
 
